@@ -1,0 +1,72 @@
+print("📚 Welcome to BookMatch AI! A personalized book recommendation system using Open Library API🔍")
+print("Because every reader deserves the right book match! 📖✨\n")
+#step 1:ask for user preferences
+genre = input("What genre do you prefer? (e.g., Fiction, Non-Fiction, Mystery, Sci-Fi, Fantasy) ")
+author = input("Do you have a favorite author? (If yes, please specify. If no, just type 'No') ")
+length = input("Do you prefer short books (less than 300 pages) or long books (more than 300 pages)? (Type 'Short' or 'Long') ")
+protagonist = input("What type of protagonist do you like? (e.g., female lead, multiple characters): ")
+#Store inputs in a dictionary (useful later)
+user_preferences = {
+    "genre": genre,
+    "author": author,
+    "length": length,
+    "protagonist": protagonist,
+    
+}
+print("\nThank you for sharing your preferences! 📚✨")
+print(user_preferences)
+
+#Now we’ll Turn user inputs into a search query Connect to the Open Library API and Fetch book data
+import requests
+
+# Step 2: Create search query from user input
+query = f"{user_preferences['genre']} {user_preferences['author']} {user_preferences['protagonist']}"
+
+print("\n🔍 Searching for books...")
+
+# Open Library Search API
+# Open Library API request (SAFE VERSION)
+
+url = f"https://openlibrary.org/search.json?q={query}"
+try:
+    response = requests.get(url)
+
+    # Check if request worked
+    if response.status_code == 200:
+        data = response.json()
+    else:
+        print(f"❌ Error: Received status code {response.status_code}")
+        exit()
+except requests.exceptions.RequestException as e:
+    print("❌ Network error occurred:", e)
+    exit()
+# Step 3: Extract and display top 3 books
+
+books = data["docs"][:3]  # get first 3 results
+
+print("\n📚 Top 3 Book Recommendations:\n")
+
+for i, book in enumerate(books, start=1):
+    title = book.get("title", "N/A")
+    
+    # author_name is a list, take first author
+    author = book.get("author_name", ["Unknown"])[0]
+    # create Open Library link
+    key = book.get("key", "")
+    link = f"https://openlibrary.org{key}"
+    
+    # cover image (if available)
+    cover_id = book.get("cover_i")
+    if cover_id:
+        cover_url = f"https://covers.openlibrary.org/b/id/{cover_id}-L.jpg"
+    else:
+        cover_url = "No cover available"
+    
+    print(f"\n✨ Based on your interest in {genre} , {length} and {protagonist} characters, here are some great picks for you:\n")
+
+    print(f"{i}. 📖 {title}")
+    print(f"   👤 Author: {author}")
+    print(f"   🔗 Link: {link}")
+    print(f"   🖼️ Cover: {cover_url}\n")
+
+    
